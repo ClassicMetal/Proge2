@@ -13,34 +13,49 @@ public class FloorManager : MonoBehaviour
     public float m_fMaxMovementSpeed;
 
     private float m_fMovementSpeed;
+    private int m_iNumberOfParts;
 
     // Use this for initialization
     void Start()
     {
         float fZPos = 0.0f;
         float fFloorLength = Mathf.Abs(m_fFloorStartZ) + Mathf.Abs(m_fFloorEndZ);
+        m_fMovementSpeed = m_fMinMovementSpeed;
 
         Debug.Log("Floor length is: " + fFloorLength.ToString());
 
-        m_fMovementSpeed = m_fMinMovementSpeed;
-
-        while (fZPos > -fFloorLength)
+        while (fZPos > -(fFloorLength - 15))
         {
             SpawnNewFloor(fZPos);
             fZPos -= 5.0f;
         }
+
+        SpawnNewFloor(fZPos, false);
+        fZPos -= 5.0f;
+        SpawnNewFloor(fZPos, false);
+        fZPos -= 5.0f;
+        SpawnNewFloor(fZPos, false);
+        fZPos -= 5.0f;
     }
 
 
-    public void SpawnNewFloor(float fZOffset)
+    public void SpawnNewFloor(float fZOffset, bool bRand = true)
     {
-        Transform tFloorTransform = Instantiate(m_aFloorPrefabs[Random.Range(0, m_aFloorPrefabs.Length - 1)], new Vector3(0.0f, 0.0f, m_fFloorStartZ + fZOffset), Quaternion.identity);
+        Transform tFloorTransform = null;
+
+        if (bRand)
+            tFloorTransform = Instantiate(m_aFloorPrefabs[Random.Range(0, m_aFloorPrefabs.Length)], new Vector3(0.0f, 0.0f, m_fFloorStartZ + fZOffset), Quaternion.identity);
+        else
+            tFloorTransform = Instantiate(m_aFloorPrefabs[0], new Vector3(0.0f, 0.0f, m_fFloorStartZ + fZOffset), Quaternion.identity);
+
+        // Check we spawned something...
         if (null == tFloorTransform)
         {
             Debug.LogError("Unable to instantiate floor part");
             return;
         }
 
+        // Get and check for the floor part controller
         FloorPart gcFloorPart = tFloorTransform.GetComponent<FloorPart>();
         if (null == gcFloorPart)
         {
@@ -48,6 +63,7 @@ public class FloorManager : MonoBehaviour
             return;
         }
 
+        // Set default params
         gcFloorPart.m_fEndZ = m_fFloorEndZ;
         gcFloorPart.m_fStartZ = m_fFloorStartZ + fZOffset;
         gcFloorPart.m_fMovementSpeed = m_fMovementSpeed;

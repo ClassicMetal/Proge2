@@ -12,8 +12,13 @@ public class FloorManager : MonoBehaviour
     public float m_fMinMovementSpeed;
     public float m_fMaxMovementSpeed;
 
+    public float m_fSpeedupInterval = 1.0f;
+    public float m_fSpeedUpAmount;
+
     private float m_fMovementSpeed;
     private int m_iNumberOfParts;
+    private float m_fEventTime;
+
 
     // Use this for initialization
     void Start()
@@ -36,6 +41,8 @@ public class FloorManager : MonoBehaviour
         fZPos -= 5.0f;
         SpawnNewFloor(fZPos, false);
         fZPos -= 5.0f;
+
+        m_fEventTime = Time.time;
     }
 
 
@@ -75,9 +82,17 @@ public class FloorManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Time.time - m_fEventTime > m_fSpeedupInterval)
+        {
+            m_fMovementSpeed += Mathf.Clamp(m_fMovementSpeed + m_fSpeedUpAmount, m_fMinMovementSpeed, m_fMaxMovementSpeed);
+            m_fEventTime = Time.time;
 
+            foreach (GameObject go in GameObject.FindGameObjectsWithTag("Floor Parts"))
+            {
+                FloorPart gcFloorPart = go.GetComponent<FloorPart>();
+                if (null != gcFloorPart)
+                    gcFloorPart.m_fMovementSpeed = m_fMovementSpeed;
+            }
+        }
     }
-
-
-
 }
